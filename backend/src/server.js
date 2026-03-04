@@ -1,51 +1,63 @@
 import express from "express";
 import cors from "cors";
-import { db } from "./db.js";
+import dotenv from "dotenv";
+import authRoutes from "./routes/authRoutes.js";
+import restaurantRoutes from "./routes/restaurantRoutes.js";
+
+dotenv.config();
 
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 5000;
+
+/* =====================================
+   Middleware
+===================================== */
+
+// Parse JSON body
 app.use(express.json());
 
-/* HEALTH CHECK */
-app.get("/api/health", (req, res) => {
-  res.json({ message: "RRRS API running" });
+// Allow frontend (Vite) to access backend
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
+/* =====================================
+   Routes
+===================================== */
+
+app.get("/", (req, res) => {
+  res.json({ message: "RRRS API is running 🚀" });
 });
 
-/* GET ALL RESTAURANTS */
-app.get("/api/restaurants", async (req, res) => {
-  const [rows] = await db.query("SELECT * FROM restaurants");
-  res.json(rows);
+app.use("/api/auth", authRoutes);
+app.use("/api/restaurants", restaurantRoutes);
+
+/* =====================================
+   404 Handler
+===================================== */
+
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
 });
 
-/* CREATE RESTAURANT */
-app.post("/api/restaurants", async (req, res) => {
-  const { name, description } = req.body;
-  await db.query(
-    "INSERT INTO restaurants (name, description) VALUES (?, ?)",
-    [name, description]
-  );
-  res.json({ message: "Restaurant created" });
+/* =====================================
+   Global Error Handler
+===================================== */
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    message: "Something went wrong",
+  });
 });
 
-/* ADD REVIEW */
-app.post("/api/reviews", async (req, res) => {
-  const { restaurant_id, rating, comment } = req.body;
-  await db.query(
-    "INSERT INTO reviews (restaurant_id, rating, comment) VALUES (?, ?, ?)",
-    [restaurant_id, rating, comment]
-  );
-  res.json({ message: "Review added" });
-});
+/* =====================================
+   Start Server
+===================================== */
 
-/* GET REVIEWS BY RESTAURANT */
-app.get("/api/restaurants/:id/reviews", async (req, res) => {
-  const [rows] = await db.query(
-    "SELECT * FROM reviews WHERE restaurant_id = ?",
-    [req.params.id]
-  );
-  res.json(rows);
-});
-
-app.listen(5000, () => {
-  console.log("Backend running on port 5000");
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
