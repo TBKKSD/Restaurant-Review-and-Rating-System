@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  res.json([{ id: 1, name: "Test Restaurant" }]);
+  res.json({ message: "Auth route working" });
 });
 
 export default router;
