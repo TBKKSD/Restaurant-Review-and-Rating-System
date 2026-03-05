@@ -14,9 +14,7 @@ export default function App() {
         <Route 
           path="/" 
           element={
-            <ProtectedRoute>
               <Home />
-            </ProtectedRoute>
           } />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -24,9 +22,7 @@ export default function App() {
         <Route
           path="/restaurants"
           element={
-            <ProtectedRoute>
               <Restaurants />
-            </ProtectedRoute>
           }
         />
       </Routes>

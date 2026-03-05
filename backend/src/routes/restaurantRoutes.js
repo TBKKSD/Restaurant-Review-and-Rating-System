@@ -1,4 +1,5 @@
 import express from "express";
+import db from "../db.js";
 import {
   getAllRestaurants,
   createRestaurant,
@@ -9,13 +10,21 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// GET
-router.get("/", protect, async (req, res) => {
+/* =========================
+   PUBLIC ROUTE
+========================= */
+
+// View restaurants (no login required)
+router.get("/", async (req, res) => {
   const restaurants = await getAllRestaurants();
   res.json(restaurants);
 });
 
-// CREATE
+/* =========================
+   PROTECTED ROUTES
+========================= */
+
+// CREATE restaurant
 router.post("/", protect, async (req, res) => {
   const { name, description } = req.body;
 
@@ -30,6 +39,21 @@ router.post("/", protect, async (req, res) => {
 
 // UPDATE (owner only)
 router.put("/:id", protect, async (req, res) => {
+  const [rows] = await db.query(
+    "SELECT * FROM restaurants WHERE id = ?",
+    [req.params.id]
+  );
+
+  const restaurant = rows[0];
+
+  if (!restaurant) {
+    return res.status(404).json({ message: "Restaurant not found" });
+  }
+
+  if (restaurant.user_id !== req.user.id) {
+    return res.status(403).json({ message: "Not authorized" });
+  }
+
   await updateRestaurant(
     req.params.id,
     req.body.name,
@@ -41,7 +65,23 @@ router.put("/:id", protect, async (req, res) => {
 
 // DELETE (owner only)
 router.delete("/:id", protect, async (req, res) => {
+  const [rows] = await db.query(
+    "SELECT * FROM restaurants WHERE id = ?",
+    [req.params.id]
+  );
+
+  const restaurant = rows[0];
+
+  if (!restaurant) {
+    return res.status(404).json({ message: "Restaurant not found" });
+  }
+
+  if (restaurant.user_id !== req.user.id) {
+    return res.status(403).json({ message: "Not authorized" });
+  }
+
   await deleteRestaurant(req.params.id);
+
   res.json({ message: "Deleted" });
 });
 

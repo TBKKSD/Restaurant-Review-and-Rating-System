@@ -25,7 +25,7 @@ export default function Login() {
     try {
       const res = await API.post("/auth/login", form);
 
-      localStorage.setItem("token", res.data.token);
+      login(res.data.token);
       navigate("/restaurants");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");

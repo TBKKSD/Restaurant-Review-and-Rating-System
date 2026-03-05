@@ -9,6 +9,7 @@ export default function Restaurants() {
   const [reviews, setReviews] = useState({});
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+  const token = localStorage.getItem("token");
 
   const fetchRestaurants = async () => {
     const res = await API.get("/restaurants");
@@ -95,9 +96,11 @@ export default function Restaurants() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
-        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg">
-          {editingId ? "Update" : "Add"} Restaurant
-        </button>
+        {token && (
+          <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg">
+            {editingId ? "Update" : "Add"} Restaurant
+          </button>
+        )}
       </form>
 
       <div className="grid gap-6">
@@ -111,22 +114,23 @@ export default function Restaurants() {
                   ⭐ {r.average_rating?.toFixed(1) || "No ratings"}
                 </p>
               </div>
+              {userId === restaurant.user_id && (
+                <div className="space-x-2">
+                  <button
+                    onClick={() => handleEdit(r)}
+                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                  >
+                    Edit
+                  </button>
 
-              <div className="space-x-2">
-                <button
-                  onClick={() => handleEdit(r)}
-                  className="bg-blue-500 text-white px-3 py-1 rounded"
-                >
-                  Edit
-                </button>
-
-                <button
-                  onClick={() => handleDelete(r.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded"
-                >
-                  Delete
-                </button>
-              </div>
+                  <button
+                    onClick={() => handleDelete(r.id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Review Section */}
@@ -152,12 +156,22 @@ export default function Restaurants() {
                 className="border p-2 rounded mr-2"
               />
 
-              <button
-                onClick={() => handleReview(r.id)}
-                className="bg-green-600 text-white px-3 py-1 rounded"
-              >
-                Submit
-              </button>
+              {token ? (
+                <>
+                  <input
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+
+                  <button onClick={() => handleReview(r.id)}>
+                    Submit Review
+                  </button>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  Login to leave a review
+                </p>
+              )}
 
               <button
                 onClick={() => fetchReviews(r.id)}

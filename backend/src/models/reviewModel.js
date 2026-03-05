@@ -17,4 +17,7 @@ const reviewSchema = new mongoose.Schema({
   },
 });
 
+// Prevent duplicate review
+reviewSchema.index({ restaurantId: 1, userId: 1 }, { unique: true });
+
 export default mongoose.model("Review", reviewSchema);
