@@ -1,22 +1,43 @@
 import { useEffect, useState } from "react";
+import API from "../api";
 
 export default function Home() {
   const [restaurants, setRestaurants] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/restaurants")
-      .then((res) => res.json())
-      .then(setRestaurants);
+    const fetchRestaurants = async () => {
+      try {
+        const res = await API.get("/restaurants");
+
+        if (Array.isArray(res.data)) {
+          setRestaurants(res.data);
+        } else {
+          setRestaurants([]);
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Please login to view restaurants.");
+        setRestaurants([]); // prevent crash
+      }
+    };
+
+    fetchRestaurants();
   }, []);
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      {restaurants.map((r) => (
-        <div key={r.id} className="bg-white p-4 rounded shadow">
-          <h2 className="font-bold text-lg">{r.name}</h2>
-          <p>{r.description}</p>
-        </div>
-      ))}
+    <div>
+      <h2>Home</h2>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {restaurants.length > 0 && (
+        <ul>
+          {restaurants.map((r) => (
+            <li key={r.id}>{r.name}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

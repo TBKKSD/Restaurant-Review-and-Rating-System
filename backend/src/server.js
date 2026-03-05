@@ -3,6 +3,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
+import connectMongo from "./config/mongo.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
+
+connectMongo();
 
 dotenv.config();
 
@@ -34,6 +38,8 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/restaurants", restaurantRoutes);
+app.use("/api/reviews", reviewRoutes);
+
 
 /* =====================================
    404 Handler
@@ -58,6 +64,6 @@ app.use((err, req, res, next) => {
    Start Server
 ===================================== */
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
