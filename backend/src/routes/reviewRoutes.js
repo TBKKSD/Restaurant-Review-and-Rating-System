@@ -47,12 +47,39 @@ router.post("/", protect, async (req, res) => {
 =========================== */
 router.get("/:restaurantId", async (req, res) => {
   try {
-    const reviews = await Review.find({
-      restaurantId: req.params.restaurantId,
-    });
+    const reviews = await Review.aggregate([
+      {
+        $match: {
+          restaurantId: Number(req.params.restaurantId),
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          rating: 1,
+          comment: 1,
+          createdAt: 1,
+          email: "$user.email",
+        },
+      },
+    ]);
 
     res.json(reviews);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
