@@ -11,6 +11,7 @@ export default function Restaurants() {
   const [comment, setComment] = useState("");
   const token = localStorage.getItem("token");
 
+
   const fetchRestaurants = async () => {
     const res = await API.get("/restaurants");
     setRestaurants(res.data);
@@ -114,7 +115,7 @@ export default function Restaurants() {
                   ⭐ {r.average_rating?.toFixed(1) || "No ratings"}
                 </p>
               </div>
-              {userId === restaurant.user_id && (
+              {userId === r.user_id && (
                 <div className="space-x-2">
                   <button
                     onClick={() => handleEdit(r)}
