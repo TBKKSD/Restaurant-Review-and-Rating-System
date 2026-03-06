@@ -1,69 +1,74 @@
 import { useEffect, useState } from "react";
 import API from "../api";
+import { Link } from "react-router-dom";
+import StarRating from "../components/StarRating";
+import { useAuth } from "../context/AuthContext";
 
 export default function Restaurants() {
+  const { token } = useAuth();
+
   const [restaurants, setRestaurants] = useState([]);
-  const [editingId, setEditingId] = useState(null);
+  const [reviews, setReviews] = useState({});
+  const [showReviews, setShowReviews] = useState({});
+  const [search, setSearch] = useState("");
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [reviews, setReviews] = useState({});
+
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
-  const token = localStorage.getItem("token");
-
-
-  const fetchRestaurants = async () => {
-    const res = await API.get("/restaurants");
-    setRestaurants(res.data);
-  };
 
   useEffect(() => {
     fetchRestaurants();
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (editingId) {
-      await API.put(`/restaurants/${editingId}`, {
-        name,
-        description,
-      });
-      setEditingId(null);
-    } else {
-      await API.post("/restaurants", { name, description });
+  const fetchRestaurants = async () => {
+    try {
+      const res = await API.get("/restaurants");
+      setRestaurants(res.data);
+    } catch (err) {
+      console.error(err);
     }
+  };
+
+  const fetchReviews = async (restaurantId) => {
+    try {
+      const res = await API.get(`/reviews/${restaurantId}`);
+
+      setReviews((prev) => ({
+        ...prev,
+        [restaurantId]: res.data,
+      }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const toggleReviews = (restaurantId) => {
+    setShowReviews((prev) => ({
+      ...prev,
+      [restaurantId]: !prev[restaurantId],
+    }));
+
+    if (!reviews[restaurantId]) {
+      fetchReviews(restaurantId);
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!name) return;
+
+    await API.post("/restaurants", { name, description });
 
     setName("");
     setDescription("");
-    fetchRestaurants();
-  };
 
-  const handleEdit = (restaurant) => {
-    setEditingId(restaurant.id);
-    setName(restaurant.name);
-    setDescription(restaurant.description);
+    fetchRestaurants();
   };
 
   const handleDelete = async (id) => {
     await API.delete(`/restaurants/${id}`);
     fetchRestaurants();
-  };
-
-  const fetchReviews = async (restaurantId) => {
-    // If already open → close it
-    if (reviews[restaurantId]) {
-      setReviews((prev) => {
-        const updated = { ...prev };
-        delete updated[restaurantId];
-        return updated;
-      });
-      return;
-    }
-
-    // Otherwise fetch and show
-    const res = await API.get(`/reviews/${restaurantId}`);
-    setReviews((prev) => ({ ...prev, [restaurantId]: res.data }));
   };
 
   const handleReview = async (restaurantId) => {
@@ -73,129 +78,151 @@ export default function Restaurants() {
       comment,
     });
 
-    setComment("");
     setRating(5);
+    setComment("");
+
     fetchRestaurants();
     fetchReviews(restaurantId);
   };
 
+  const filteredRestaurants = restaurants.filter((r) =>
+    r.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className="p-8">
-      <h2 className="text-2xl font-bold mb-6">Restaurants</h2>
+    <div className="max-w-5xl mx-auto mt-10 px-4">
 
-      <form onSubmit={handleSubmit} className="mb-8 space-y-3">
-        <input
-          className="w-full p-3 border rounded-lg"
-          placeholder="Restaurant name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <textarea
-          className="w-full p-3 border rounded-lg"
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        {token && (
-          <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg">
-            {editingId ? "Update" : "Add"} Restaurant
+      <h1 className="text-3xl font-bold mb-6">
+        Restaurants
+      </h1>
+
+      {/* SEARCH */}
+      <input
+        type="text"
+        placeholder="Search restaurants..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="border p-2 rounded w-full mb-6"
+      />
+
+      {/* ADD RESTAURANT */}
+      {token && (
+        <div className="border p-4 rounded mb-8">
+          <h2 className="font-semibold mb-2">
+            Add Restaurant
+          </h2>
+
+          <input
+            type="text"
+            placeholder="Restaurant name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="border p-2 rounded w-full mb-2"
+          />
+
+          <textarea
+            placeholder="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="border p-2 rounded w-full mb-2"
+          />
+
+          <button
+            onClick={handleCreate}
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          >
+            Add Restaurant
           </button>
-        )}
-      </form>
+        </div>
+      )}
 
-      <div className="grid gap-6">
-        {restaurants.map((r) => (
-          <div key={r.id} className="p-6 bg-white shadow rounded-xl">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-bold">{r.name}</h3>
-                <p className="text-gray-600">{r.description}</p>
-                <p className="text-yellow-500 mt-1">
-                  ⭐ {r.average_rating?.toFixed(1) || "No ratings"}
-                </p>
-              </div>
-              {userId === r.user_id && (
-                <div className="space-x-2">
-                  <button
-                    onClick={() => handleEdit(r)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded"
-                  >
-                    Edit
-                  </button>
+      {/* RESTAURANT LIST */}
+      {filteredRestaurants.map((restaurant) => (
+        <div
+          key={restaurant.id}
+          className="border p-4 rounded mb-4"
+        >
+          <Link
+            to={`/restaurants/${restaurant.id}`}
+            className="text-xl font-bold text-indigo-600"
+          >
+            {restaurant.name}
+          </Link>
 
-                  <button
-                    onClick={() => handleDelete(r.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
+          <p className="text-gray-600">
+            {restaurant.description}
+          </p>
 
-            {/* Review Section */}
-            <div className="mt-4 border-t pt-4">
-              <h4 className="font-semibold mb-2">Add Review</h4>
+          <p className="mt-1 font-semibold">
+            ⭐ {restaurant.average_rating ? restaurant.average_rating.toFixed(1) : "No rating"}
+          </p>
 
-              <select
-                value={rating}
-                onChange={(e) => setRating(Number(e.target.value))}
-                className="border p-2 rounded mr-2"
+          {/* ACTIONS */}
+          <div className="flex gap-4 mt-2">
+
+            <button
+              onClick={() => toggleReviews(restaurant.id)}
+              className="text-blue-600"
+            >
+              {showReviews[restaurant.id] ? "Hide Reviews" : "View Reviews"}
+            </button>
+
+            {token && (
+              <button
+                onClick={() => handleDelete(restaurant.id)}
+                className="text-red-600"
               >
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n} value={n}>
-                    ⭐ {n}
-                  </option>
-                ))}
-              </select>
+                Delete
+              </button>
+            )}
+          </div>
 
-              <input
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Write a comment..."
-                className="border p-2 rounded mr-2"
-              />
+          {/* REVIEWS */}
+          {showReviews[restaurant.id] && (
+            <div className="mt-4 border-t pt-3">
 
-              {token ? (
-                <>
-                  <input
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
+              {(reviews[restaurant.id] || []).map((r, i) => (
+                <div key={i} className="border p-2 rounded mb-2">
+                  <p className="font-semibold">
+                    {r.email || "User"}
+                  </p>
+                  <p>⭐ {r.rating}</p>
+                  <p>{r.comment}</p>
+                </div>
+              ))}
+
+              {/* ADD REVIEW */}
+              {token && (
+                <div className="mt-3">
+
+                  <StarRating
+                    rating={rating}
+                    setRating={setRating}
                   />
 
-                  <button onClick={() => handleReview(r.id)}>
+                  <textarea
+                    placeholder="Write a review..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="border p-2 rounded w-full mt-2"
+                  />
+
+                  <button
+                    onClick={() => handleReview(restaurant.id)}
+                    className="bg-green-600 text-white px-4 py-2 rounded mt-2 hover:bg-green-700"
+                  >
                     Submit Review
                   </button>
-                </>
-              ) : (
-                <p className="text-sm text-gray-500">
-                  Login to leave a review
-                </p>
+
+                </div>
               )}
 
-              <button
-                onClick={() => fetchReviews(r.id)}
-                className="ml-2 text-sm text-indigo-600"
-              >
-                {reviews[r.id] ? "Hide Reviews" : "View Reviews"}
-              </button>
-
-              <div className="mt-3 space-y-2">
-                {reviews[r.id]?.map((rev) => (
-                  <div
-                    key={rev._id}
-                    className="bg-gray-100 p-3 rounded"
-                  >
-                    ⭐ {rev.rating}
-                    <p>{rev.comment}</p>
-                  </div>
-                ))}
-              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          )}
+
+        </div>
+      ))}
+
     </div>
   );
 }

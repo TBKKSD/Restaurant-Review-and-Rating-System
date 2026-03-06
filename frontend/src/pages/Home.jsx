@@ -1,100 +1,77 @@
+import { useEffect, useState } from "react";
+import API from "../api";
 import { Link } from "react-router-dom";
 
 export default function Home() {
-  const token = localStorage.getItem("token");
+  const [restaurants, setRestaurants] = useState([]);
+
+  useEffect(() => {
+    fetchRestaurants();
+  }, []);
+
+  const fetchRestaurants = async () => {
+    try {
+      const res = await API.get("/restaurants");
+
+      const sorted = res.data
+        .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
+        .slice(0, 5);
+
+      setRestaurants(sorted);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="max-w-5xl mx-auto mt-10 px-4">
 
-      {/* HERO SECTION */}
-      <section className="max-w-6xl mx-auto px-6 py-20 text-center">
-        <h1 className="text-5xl font-bold text-gray-900 mb-6">
-          Discover & Review Restaurants
-        </h1>
+      <h1 className="text-4xl font-bold mb-6 text-center">
+        🍽 Restaurant Review System
+      </h1>
 
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-10">
-          Share your dining experiences, rate restaurants, and help others
-          discover the best places to eat.
-        </p>
-        <div className="flex justify-center gap-6">
+      <p className="text-gray-600 text-center mb-10">
+        Discover restaurants and read reviews from the community
+      </p>
+
+      <h2 className="text-2xl font-semibold mb-4">
+        🔥 Top Rated Restaurants
+      </h2>
+
+      {restaurants.length === 0 && (
+        <p className="text-gray-500">No restaurants yet.</p>
+      )}
+
+      <div className="grid md:grid-cols-2 gap-4">
+        {restaurants.map((r) => (
           <Link
-            to="/restaurants"
-            className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
+            key={r.id}
+            to={`/restaurants/${r.id}`}
+            className="border p-4 rounded-lg hover:bg-gray-50 transition"
           >
-            Browse Restaurants
-          </Link>
-
-          {!token && (
-            <Link
-              to="/register"
-              className="border border-indigo-600 text-indigo-600 px-6 py-3 rounded-lg hover:bg-indigo-50 transition"
-            >
-              Join Now
-            </Link>
-          )}
-        </div>
-      </section>
-
-
-      {/* FEATURES */}
-      <section className="bg-white py-20">
-        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-10">
-
-          <div className="text-center">
-            <div className="text-4xl mb-4">🍽️</div>
-            <h3 className="text-xl font-semibold mb-2">
-              Explore Restaurants
+            <h3 className="text-lg font-bold text-indigo-600">
+              {r.name}
             </h3>
-            <p className="text-gray-600">
-              Discover restaurants shared by the community.
+
+            <p className="text-gray-600 mt-1">
+              {r.description}
             </p>
-          </div>
 
-          <div className="text-center">
-            <div className="text-4xl mb-4">⭐</div>
-            <h3 className="text-xl font-semibold mb-2">
-              Rate & Review
-            </h3>
-            <p className="text-gray-600">
-              Leave ratings and comments to share your experience.
+            <p className="mt-2 font-semibold">
+              ⭐ {r.average_rating ? r.average_rating.toFixed(1) : "No rating"}
             </p>
-          </div>
-
-          <div className="text-center">
-            <div className="text-4xl mb-4">👤</div>
-            <h3 className="text-xl font-semibold mb-2">
-              Community Driven
-            </h3>
-            <p className="text-gray-600">
-              Help others find the best places to eat.
-            </p>
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* CALL TO ACTION */}
-      <section className="bg-indigo-600 text-white py-20 text-center">
-        <h2 className="text-3xl font-bold mb-4">
-          Start reviewing restaurants today
-        </h2>
-
-        {!token ? (
-          <Link
-            to="/register"
-            className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
-          >
-            Create Account
           </Link>
-        ) : (
-          <Link
-            to="/restaurants"
-            className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
-          >
-            View Restaurants
-          </Link>
-        )}
-      </section>
+        ))}
+      </div>
+
+      <div className="text-center mt-10">
+        <Link
+          to="/restaurants"
+          className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
+        >
+          Browse All Restaurants
+        </Link>
+      </div>
 
     </div>
   );
