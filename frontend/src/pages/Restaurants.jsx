@@ -4,9 +4,11 @@ import { Link } from "react-router-dom";
 import StarRating from "../components/StarRating";
 import { useAuth } from "../context/AuthContext";
 import ConfirmModal from "../components/ConfirmModal";
+import { decodeToken } from "../utils/jwt";
 
 export default function Restaurants() {
   const { token } = useAuth();
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const [restaurants, setRestaurants] = useState([]);
   const [reviews, setReviews] = useState({});
@@ -22,9 +24,21 @@ export default function Restaurants() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [restaurantToDelete, setRestaurantToDelete] = useState(null);
 
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState({ reviewId: null, restaurantId: null });
+
   useEffect(() => {
     fetchRestaurants();
   }, []);
+
+  useEffect(() => {
+    if (token) {
+      const decoded = decodeToken(token);
+      if (decoded) {
+        setCurrentUserId(decoded.id);
+      }
+    }
+  }, [token]);
 
   const fetchRestaurants = async () => {
     try {
@@ -38,6 +52,7 @@ export default function Restaurants() {
   const fetchReviews = async (restaurantId) => {
     try {
       const res = await API.get(`/reviews/${restaurantId}`);
+      console.log("Fetched reviews for restaurant", restaurantId, ":", res.data);
 
       setReviews((prev) => ({
         ...prev,
@@ -109,6 +124,41 @@ export default function Restaurants() {
 
     fetchRestaurants();
     fetchReviews(restaurantId);
+  };
+
+  const openDeleteReviewModal = (reviewId, restaurantId) => {
+    console.log("Opening delete modal for review:", reviewId, "restaurant:", restaurantId);
+    setReviewToDelete({ reviewId, restaurantId });
+    setIsReviewModalOpen(true);
+  };
+
+  const confirmDeleteReview = async () => {
+    setIsReviewModalOpen(false);
+    try {
+      const reviewId = reviewToDelete.reviewId;
+      console.log("Deleting review with ID:", reviewId);
+      
+      if (!reviewId) {
+        alert("Review ID is missing");
+        return;
+      }
+      
+      await API.delete(`/reviews/${encodeURIComponent(reviewId)}`);
+      fetchRestaurants();
+      fetchReviews(reviewToDelete.restaurantId);
+      alert("Review deleted successfully.");
+    } catch (err) {
+      console.error("Delete review error:", err);
+      if (err.response && err.response.status === 403) {
+        alert("Access Denied: You are not the owner of this review.");
+      } else if (err.response && err.response.status === 404) {
+        alert("Review not found.");
+      } else {
+        alert("An error occurred while trying to delete the review: " + (err.response?.data?.message || err.message));
+      }
+    } finally {
+      setReviewToDelete({ reviewId: null, restaurantId: null });
+    }
   };
 
   const filteredRestaurants = restaurants.filter((r) =>
@@ -210,6 +260,14 @@ export default function Restaurants() {
               title="Delete Restaurant?"
               message="This action is permanent and cannot be undone. Are you sure you want to proceed?"
             />
+
+            <ConfirmModal
+              isOpen={isReviewModalOpen}
+              onClose={() => setIsReviewModalOpen(false)}
+              onConfirm={confirmDeleteReview}
+              title="Delete Review?"
+              message="Are you sure you want to delete your review? This action cannot be undone."
+            />
           </div>
 
           {/* REVIEWS */}
@@ -217,12 +275,30 @@ export default function Restaurants() {
             <div className="mt-4 border-t pt-3">
 
               {(reviews[restaurant.id] || []).map((r, i) => (
-                <div key={i} className="border p-2 rounded mb-2">
-                  <p className="font-semibold">
-                    {r.email || "User"}
-                  </p>
-                  <p>⭐ {r.rating}</p>
-                  <p>{r.comment}</p>
+                <div key={i} className="border p-3 rounded mb-2 bg-gray-50">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-800">
+                        {r.email || "User"}
+                      </p>
+                      <p className="text-yellow-500 font-medium">⭐ {r.rating}</p>
+                      <p className="text-gray-700 mt-1">{r.comment}</p>
+                    </div>
+                    
+                    {/* DELETE BUTTON - Only show if current user owns this review */}
+                    {currentUserId && r.userId === currentUserId && (
+                      <button
+                        onClick={() => {
+                          console.log("Review object:", r);
+                          console.log("Review _id:", r._id);
+                          openDeleteReviewModal(r._id, restaurant.id);
+                        }}
+                        className="ml-3 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition whitespace-nowrap"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
 
