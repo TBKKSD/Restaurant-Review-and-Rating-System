@@ -7,25 +7,26 @@ export const getAllRestaurants = async () => {
 };
 
 // CREATE
-export const createRestaurant = async (name, description, userId) => {
+export const createRestaurant = async (name, description, image, userId) => {
   const [result] = await db.query(
-    "INSERT INTO restaurants (name, description, user_id) VALUES (?, ?, ?)",
-    [name, description, userId]
+    "INSERT INTO restaurants (name, description, image, user_id) VALUES (?, ?, ?, ?)",
+    [name, description, image, userId]
   );
 
   return {
     id: result.insertId,
     name,
     description,
+    image,
     user_id: userId,
   };
 };
 
 // UPDATE
-export const updateRestaurant = async (id, name, description) => {
+export const updateRestaurant = async (id, name, description, image) => {
   await db.query(
-    "UPDATE restaurants SET name = ?, description = ? WHERE id = ?",
-    [name, description, id]
+    "UPDATE restaurants SET name = ?, description = ?, image = ? WHERE id = ?",
+    [name, description, image, id]
   );
 };
 

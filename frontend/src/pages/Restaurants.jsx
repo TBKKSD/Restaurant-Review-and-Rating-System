@@ -17,6 +17,7 @@ export default function Restaurants() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [image, setImage] = useState(null);
 
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
@@ -28,6 +29,7 @@ export default function Restaurants() {
   const [restaurantToEdit, setRestaurantToEdit] = useState(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editImage, setEditImage] = useState(null);
 
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState({ reviewId: null, restaurantId: null });
@@ -82,10 +84,22 @@ export default function Restaurants() {
   const handleCreate = async () => {
     if (!name) return;
 
-    await API.post("/restaurants", { name, description });
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description", description);
+    if (image) {
+      formData.append("image", image);
+    }
+
+    await API.post("/restaurants", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     setName("");
     setDescription("");
+    setImage(null);
 
     fetchRestaurants();
   };
@@ -121,6 +135,7 @@ export default function Restaurants() {
     setRestaurantToEdit(restaurant);
     setEditName(restaurant.name);
     setEditDescription(restaurant.description);
+    setEditImage(null);
     setIsEditModalOpen(true);
   };
 
@@ -128,9 +143,19 @@ export default function Restaurants() {
   const confirmEdit = async () => {
     setIsEditModalOpen(false); // Close modal first
     try {
-      await API.put(`/restaurants/${restaurantToEdit.id}`, {
-        name: editName,
-        description: editDescription,
+      const formData = new FormData();
+      formData.append("name", editName);
+      formData.append("description", editDescription);
+      if (editImage) {
+        formData.append("image", editImage);
+      } else {
+        formData.append("image", restaurantToEdit.image || "");
+      }
+
+      await API.put(`/restaurants/${restaurantToEdit.id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
       fetchRestaurants();
       alert("Restaurant updated successfully.");
@@ -145,6 +170,7 @@ export default function Restaurants() {
       setRestaurantToEdit(null);
       setEditName("");
       setEditDescription("");
+      setEditImage(null);
     }
   };
 
@@ -240,6 +266,13 @@ export default function Restaurants() {
             className="border p-2 rounded w-full mb-2"
           />
 
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImage(e.target.files[0])}
+            className="border p-2 rounded w-full mb-2"
+          />
+
           <button
             onClick={handleCreate}
             className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
@@ -255,6 +288,14 @@ export default function Restaurants() {
           key={restaurant.id}
           className="border p-4 rounded mb-4"
         >
+          {restaurant.image && (
+            <img
+              src={`http://localhost:5000${restaurant.image}`}
+              alt={restaurant.name}
+              className="w-full h-48 object-cover rounded mb-4"
+            />
+          )}
+
           <Link
             to={`/restaurants/${restaurant.id}`}
             className="text-xl font-bold text-indigo-600"
@@ -347,6 +388,21 @@ export default function Restaurants() {
                       placeholder="Enter restaurant description"
                     />
                   </div>
+
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Image
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setEditImage(e.target.files[0])}
+                      className="border p-2 rounded w-full"
+                    />
+                    {restaurantToEdit?.image && (
+                      <p className="text-sm text-gray-500 mt-1">Leave empty to keep current image</p>
+                    )}
+                  </div>
                   
                   <div className="flex justify-end gap-3">
                     <button
@@ -355,6 +411,7 @@ export default function Restaurants() {
                         setRestaurantToEdit(null);
                         setEditName("");
                         setEditDescription("");
+                        setEditImage(null);
                       }}
                       className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition"
                     >
