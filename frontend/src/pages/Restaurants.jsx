@@ -286,19 +286,21 @@ export default function Restaurants() {
       {filteredRestaurants.map((restaurant) => (
         <div
           key={restaurant.id}
-          className="border p-4 rounded mb-4"
+          className="border p-4 rounded mb-4 bg-white shadow hover:shadow-lg transition-shadow"
         >
           {restaurant.image && (
-            <img
-              src={`http://localhost:5000${restaurant.image}`}
-              alt={restaurant.name}
-              className="w-full h-48 object-cover rounded mb-4"
-            />
+            <div className="w-full bg-gray-100 rounded mb-4 flex items-center justify-center overflow-hidden" style={{ aspectRatio: '800/600' }}>
+              <img
+                src={`http://localhost:5000${restaurant.image}`}
+                alt={restaurant.name}
+                className="w-full h-full object-contain"
+              />
+            </div>
           )}
 
           <Link
             to={`/restaurants/${restaurant.id}`}
-            className="text-xl font-bold text-indigo-600"
+            className="text-xl font-bold text-indigo-600 hover:text-indigo-700"
           >
             {restaurant.name}
           </Link>
