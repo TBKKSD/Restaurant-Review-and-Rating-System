@@ -67,9 +67,30 @@ export default function Restaurants() {
   };
 
   const handleDelete = async (id) => {
-    await API.delete(`/restaurants/${id}`);
-    fetchRestaurants();
+    // 1. Browser confirmation pop-up
+    const confirmBox = window.confirm(
+      "Are you sure you want to delete this restaurant?"
+    );
+
+    if (confirmBox === true) {
+      try {
+        await API.delete(`/restaurants/${id}`);
+      
+        // Refresh the list if successful
+        fetchRestaurants();
+        alert("Restaurant deleted successfully.");
+      } catch (err) {
+        // 2. Handle 'Access Denied' (403) from the backend
+        if (err.response && err.response.status === 403) {
+          alert("Access Denied: You are not the owner of this restaurant.");
+        } else {
+          console.error(err);
+          alert("An error occurred while trying to delete.");
+        }
+     }
+    }
   };
+
 
   const handleReview = async (restaurantId) => {
     await API.post("/reviews", {
