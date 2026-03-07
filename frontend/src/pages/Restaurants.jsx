@@ -483,7 +483,11 @@ export default function Restaurants() {
                     onClick={() => handleReview(restaurant.id)}
                     className="bg-green-600 text-white px-4 py-2 rounded mt-2 hover:bg-green-700"
                   >
-                    Submit Review
+                    {(reviews[restaurant.id] || []).some(
+                      (r) => r.userId === currentUserId
+                    )
+                      ? "Edit Review"
+                      : "Submit Review"}
                   </button>
 
                 </div>
