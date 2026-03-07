@@ -27,10 +27,20 @@ export default function RestaurantDetail() {
   if (!restaurant) return <div>Loading...</div>;
 
   return (
-    <div className="max-w-3xl mx-auto mt-10">
+    <div className="max-w-3xl mx-auto mt-10 px-4">
 
-      <h1 className="text-3xl font-bold">{restaurant.name}</h1>
-      <p className="text-gray-600 mt-2">{restaurant.description}</p>
+      {restaurant.image && (
+        <div className="w-full bg-gray-100 rounded-lg mb-6 shadow-lg flex items-center justify-center overflow-hidden" style={{ aspectRatio: '800/600' }}>
+          <img
+            src={`http://localhost:5000${restaurant.image}`}
+            alt={restaurant.name}
+            className="w-full h-full object-contain"
+          />
+        </div>
+      )}
+
+      <h1 className="text-4xl font-bold mb-3">{restaurant.name}</h1>
+      <p className="text-gray-600 text-lg mb-4">{restaurant.description}</p>
 
       <p className="mt-2 font-semibold">
         ⭐ {restaurant.average_rating?.toFixed(1) || "No rating"}

@@ -6,7 +6,11 @@ import restaurantRoutes from "./routes/restaurantRoutes.js";
 import connectMongo from "./config/mongo.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 
-connectMongo();
+try {
+  connectMongo();
+} catch (error) {
+  console.log("MongoDB connection failed, continuing without it:", error.message);
+}
 
 dotenv.config();
 
@@ -23,10 +27,13 @@ app.use(express.json());
 // Allow frontend (Vite) to access backend
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     credentials: true,
   })
 );
+
+// Serve uploaded images
+app.use("/uploads", express.static("uploads"));
 
 /* =====================================
    Routes
