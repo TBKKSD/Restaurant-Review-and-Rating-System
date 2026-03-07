@@ -2,6 +2,7 @@ import { useState } from "react";
 
 export default function ImageUploader({ image, setImage }) {
   const [preview, setPreview] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
 
   const handleFile = (file) => {
     if (!file) return;
@@ -20,8 +21,19 @@ export default function ImageUploader({ image, setImage }) {
     handleFile(file);
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragActive(false);
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
+    setDragActive(false);
+
     const file = e.dataTransfer.files[0];
     handleFile(file);
   };
@@ -34,15 +46,20 @@ export default function ImageUploader({ image, setImage }) {
   return (
     <div
       onDrop={handleDrop}
-      onDragOver={(e) => e.preventDefault()}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       style={{
-        border: "2px dashed #ccc",
+        border: dragActive ? "2px dashed #3b82f6" : "2px dashed #ccc",
         borderRadius: "10px",
         padding: "30px",
         textAlign: "center",
         cursor: "pointer",
-        background: "#fafafa",
-        marginBottom: "15px"
+        background: dragActive ? "#eff6ff" : "#fafafa",
+        marginBottom: "20px",
+        transition: "all 0.2s ease", // 👈 smooth animation
+        boxShadow: dragActive
+        ? "0 0 0 4px rgba(59,130,246,0.2)"
+        : "none"
       }}
     >
       {!preview ? (
@@ -56,6 +73,12 @@ export default function ImageUploader({ image, setImage }) {
             onChange={handleFileInput}
             style={{ marginTop: "10px" }}
           />
+
+          {dragActive && (
+            <p style={{ color: "#2563eb", marginTop: "10px" }}>
+                Drop image to upload
+            </p>
+          )}
         </>
       ) : (
         <>
