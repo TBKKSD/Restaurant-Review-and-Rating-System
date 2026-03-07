@@ -18,6 +18,7 @@ export default function Restaurants() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
@@ -100,6 +101,7 @@ export default function Restaurants() {
     setName("");
     setDescription("");
     setImage(null);
+    setPreview(null);
 
     fetchRestaurants();
   };
@@ -223,6 +225,41 @@ export default function Restaurants() {
       setReviewToDelete({ reviewId: null, restaurantId: null });
     }
   };
+  
+  const handleImageChange = (file) => {
+
+    if (!file) return;
+
+    // Check if the file is an image
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file");
+      e.target.value = "";
+      return;
+    }
+
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  const handleFileInput = (e) => {
+    const file = e.target.files[0];
+    handleImageChange(file);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    handleImageChange(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const removeImage = () => {
+    setImage(null);
+    setPreview(null);
+  };
 
   const filteredRestaurants = restaurants.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase())
@@ -266,12 +303,52 @@ export default function Restaurants() {
             className="border p-2 rounded w-full mb-2"
           />
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImage(e.target.files[0])}
-            className="border p-2 rounded w-full mb-2"
-          />
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            className="border-2 border-dashed border-gray-300 p-6 rounded-lg text-center cursor-pointer hover:border-indigo-400 transition"
+          >
+
+            {!preview && (
+              <>
+                <p className="text-gray-500">
+                  Drag & drop an image here
+                </p>
+
+                <p className="text-sm text-gray-400 mt-1">
+                  or click to upload
+                </p>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileInput}
+                  className="mt-3"
+                />
+              </>
+            )}
+
+            {preview && (
+              <div className="flex flex-col items-center">
+
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="w-48 h-32 object-cover rounded mb-3"
+                />
+
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="text-red-600 text-sm hover:underline"
+                >
+                  Remove Image
+                </button>
+
+              </div>
+            )}
+
+          </div>
 
           <button
             onClick={handleCreate}
