@@ -24,6 +24,11 @@ export default function Restaurants() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [restaurantToDelete, setRestaurantToDelete] = useState(null);
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [restaurantToEdit, setRestaurantToEdit] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState({ reviewId: null, restaurantId: null });
 
@@ -108,6 +113,38 @@ export default function Restaurants() {
       }
     } finally {
       setRestaurantToDelete(null);
+    }
+  };
+
+  // Triggers the Edit Modal
+  const openEditModal = (restaurant) => {
+    setRestaurantToEdit(restaurant);
+    setEditName(restaurant.name);
+    setEditDescription(restaurant.description);
+    setIsEditModalOpen(true);
+  };
+
+  // Executes the actual edit after confirmation
+  const confirmEdit = async () => {
+    setIsEditModalOpen(false); // Close modal first
+    try {
+      await API.put(`/restaurants/${restaurantToEdit.id}`, {
+        name: editName,
+        description: editDescription,
+      });
+      fetchRestaurants();
+      alert("Restaurant updated successfully.");
+    } catch (err) {
+      if (err.response && err.response.status === 403) {
+        alert("Access Denied: You are not the owner of this restaurant.");
+      } else {
+        console.error(err);
+        alert("An error occurred while trying to update.");
+      }
+    } finally {
+      setRestaurantToEdit(null);
+      setEditName("");
+      setEditDescription("");
     }
   };
 
@@ -243,6 +280,16 @@ export default function Restaurants() {
               {showReviews[restaurant.id] ? "Hide Reviews" : "View Reviews"}
             </button>
             
+            {/* EDIT */}
+            {token && (
+              <button
+                onClick={() => openEditModal(restaurant)}
+                className="text-green-600"
+              >
+                Edit
+              </button>
+            )}
+
             {/* DELETE */}
             {token && (
               <button
@@ -268,6 +315,61 @@ export default function Restaurants() {
               title="Delete Review?"
               message="Are you sure you want to delete your review? This action cannot be undone."
             />
+
+            {/* EDIT MODAL */}
+            {isEditModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+                <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
+                  <h3 className="text-xl font-bold mb-4 text-gray-800">Edit Restaurant</h3>
+                  
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Restaurant Name
+                    </label>
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="border p-2 rounded w-full"
+                      placeholder="Enter restaurant name"
+                    />
+                  </div>
+
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      className="border p-2 rounded w-full"
+                      rows="3"
+                      placeholder="Enter restaurant description"
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => {
+                        setIsEditModalOpen(false);
+                        setRestaurantToEdit(null);
+                        setEditName("");
+                        setEditDescription("");
+                      }}
+                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={confirmEdit}
+                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                    >
+                      Update Restaurant
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* REVIEWS */}
