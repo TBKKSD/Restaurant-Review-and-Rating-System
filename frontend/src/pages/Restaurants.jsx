@@ -3,6 +3,7 @@ import API from "../api";
 import { Link } from "react-router-dom";
 import StarRating from "../components/StarRating";
 import { useAuth } from "../context/AuthContext";
+import ConfirmModal from "../components/ConfirmModal";
 
 export default function Restaurants() {
   const { token } = useAuth();
@@ -17,6 +18,9 @@ export default function Restaurants() {
 
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [restaurantToDelete, setRestaurantToDelete] = useState(null);
 
   useEffect(() => {
     fetchRestaurants();
@@ -66,28 +70,29 @@ export default function Restaurants() {
     fetchRestaurants();
   };
 
-  const handleDelete = async (id) => {
-    // 1. Browser confirmation pop-up
-    const confirmBox = window.confirm(
-      "Are you sure you want to delete this restaurant?"
-    );
+  // Triggers the Custom UI Modal
+  const openDeleteModal = (id) => {
+    setRestaurantToDelete(id);
+    setIsModalOpen(true);
+  };
 
-    if (confirmBox === true) {
-      try {
-        await API.delete(`/restaurants/${id}`);
-      
-        // Refresh the list if successful
-        fetchRestaurants();
-        alert("Restaurant deleted successfully.");
-      } catch (err) {
-        // 2. Handle 'Access Denied' (403) from the backend
-        if (err.response && err.response.status === 403) {
-          alert("Access Denied: You are not the owner of this restaurant.");
-        } else {
-          console.error(err);
-          alert("An error occurred while trying to delete.");
-        }
-     }
+  // Executes the actual deletion after confirmation
+  const confirmDelete = async () => {
+    setIsModalOpen(false); // Close modal first
+    try {
+      await API.delete(`/restaurants/${restaurantToDelete}`);
+      fetchRestaurants();
+      // Optional: You can replace this alert with a toast notification later
+      alert("Restaurant deleted successfully.");
+    } catch (err) {
+      if (err.response && err.response.status === 403) {
+        alert("Access Denied: You are not the owner of this restaurant.");
+      } else {
+        console.error(err);
+        alert("An error occurred while trying to delete.");
+      }
+    } finally {
+      setRestaurantToDelete(null);
     }
   };
 
@@ -187,15 +192,24 @@ export default function Restaurants() {
             >
               {showReviews[restaurant.id] ? "Hide Reviews" : "View Reviews"}
             </button>
-
+            
+            {/* DELETE */}
             {token && (
               <button
-                onClick={() => handleDelete(restaurant.id)}
+                onClick={() => openDeleteModal(restaurant.id)}
                 className="text-red-600"
               >
                 Delete
               </button>
             )}
+
+            <ConfirmModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              onConfirm={confirmDelete}
+              title="Delete Restaurant?"
+              message="This action is permanent and cannot be undone. Are you sure you want to proceed?"
+            />
           </div>
 
           {/* REVIEWS */}
