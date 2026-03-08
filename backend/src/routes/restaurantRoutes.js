@@ -65,7 +65,7 @@ router.post(
   processImage,
   async (req, res) => {
 
-    const { name, description } = req.body;
+    const { name, description, cuisine } = req.body;
 
     const image = req.file
       ? `/uploads/${req.file.filename}`
@@ -75,6 +75,7 @@ router.post(
       name,
       description,
       image,
+      cuisine,
       req.user.id
     );
 

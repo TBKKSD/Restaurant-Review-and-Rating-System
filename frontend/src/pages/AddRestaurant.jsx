@@ -10,6 +10,19 @@ const AddRestaurant = () => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [cuisine, setCuisine] = useState("");
+  const cuisineOptions = [
+    "Japanese",
+    "Italian",
+    "Thai",
+    "Chinese",
+    "American",
+    "Mexican",
+    "Indian",
+    "Korean",
+    "Vietnamese",
+    "Other"
+  ];
 
   const handleFile = (e) => {
     const file = e.target.files[0];
@@ -49,6 +62,7 @@ const AddRestaurant = () => {
       formData.append("name", name);
       formData.append("description", description);
       formData.append("image", image);
+      formData.append("cuisine", cuisine);
 
       await axios.post(
         "http://localhost:5000/api/restaurants",
@@ -105,6 +119,22 @@ const AddRestaurant = () => {
               border: "1px solid #ccc"
             }}
           />
+
+          {/* CUISINE */}
+          <select
+            value={cuisine}
+            onChange={(e) => setCuisine(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4"
+            required
+          >
+            <option value="">Select Cuisine</option>
+
+            {cuisineOptions.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
 
           {/* DESCRIPTION */}
           <label>Description</label>

@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 
 const RestaurantCard = ({ restaurant }) => {
@@ -8,68 +7,83 @@ const RestaurantCard = ({ restaurant }) => {
     ? `http://localhost:5000${restaurant.image}`
     : null;
 
+  const rating = restaurant.average_rating
+    ? Number(restaurant.average_rating).toFixed(1)
+    : null;
+
+  const cuisineIcons = {
+    Japanese: "🍣",
+    Italian: "🍝",
+    Thai: "🍜",
+    Chinese: "🥡",
+    American: "🍔",
+    Mexican: "🌮",
+    Indian: "🍛",
+    Korean: "🥢",
+    Vietnamese: "🍲",
+    Other: "🍽"
+  };
+
+  const cuisineStyles = {
+    Japanese: "bg-red-100 text-red-700",
+    Italian: "bg-green-100 text-green-700",
+    Thai: "bg-yellow-100 text-yellow-700",
+    Chinese: "bg-orange-100 text-orange-700",
+    American: "bg-blue-100 text-blue-700",
+    Mexican: "bg-lime-100 text-lime-700",
+    Indian: "bg-purple-100 text-purple-700",
+    Korean: "bg-pink-100 text-pink-700",
+    Vietnamese: "bg-teal-100 text-teal-700",
+    Other: "bg-gray-100 text-gray-700"
+  };
+
   return (
     <div
       onClick={() => navigate(`/restaurants/${restaurant.id}`)}
-      style={{
-        border: "1px solid #ddd",
-        borderRadius: "12px",
-        overflow: "hidden",
-        boxShadow: "0 4px 8px rgba(0,0,0,0.08)",
-        background: "white",
-        cursor: "pointer",
-        transition: "transform 0.15s ease, box-shadow 0.15s ease"
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "scale(1.02)";
-        e.currentTarget.style.boxShadow = "0 6px 12px rgba(0,0,0,0.15)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "scale(1)";
-        e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.08)";
-      }}
+      className="bg-white rounded-xl overflow-hidden shadow-md cursor-pointer transition transform hover:-translate-y-1 hover:shadow-lg"
     >
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={restaurant.name}
-          onError={(e) => {
-            e.target.style.display = "none";
-          }}
-          style={{
-            width: "100%",
-            height: "180px",
-            objectFit: "cover"
-          }}
-        />
-      ) : (
-        <div
-          style={{
-            height: "180px",
-            background: "#eee",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#777",
-            fontSize: "14px"
-          }}
-        >
-          No Image
-        </div>
-      )}
+      {/* Image Section */}
+      <div className="relative h-48 w-full overflow-hidden">
 
-      <div style={{ padding: "15px" }}>
-        <h2 style={{ marginBottom: "8px" }}>
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={restaurant.name}
+            onError={(e) => (e.target.style.display = "none")}
+            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+            No Image
+          </div>
+        )}
+
+        {/* Rating badge */}
+        {rating && (
+          <div className="absolute top-3 right-3 bg-white text-gray-800 text-sm font-semibold px-2 py-1 rounded-lg shadow">
+            ⭐ {rating}
+          </div>
+        )}
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+
+        {/* Restaurant name */}
+        <h2 className="absolute bottom-3 left-3 text-white text-lg font-semibold">
           {restaurant.name}
         </h2>
+      </div>
 
-        <p style={{ color: "#666", fontSize: "14px" }}>
+      {/* Card Body */}
+      <div className="p-4">
+        <p className="text-gray-600 text-sm">
           {restaurant.description || "No description available"}
         </p>
-
-        <p style={{ marginTop: "10px", fontWeight: "bold" }}>
-          ⭐ {restaurant.average_rating || "No ratings yet"}
-        </p>
+        <span
+          className={`mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${cuisineStyles[restaurant.cuisine] || cuisineStyles.Other}`}
+        >
+          {cuisineIcons[restaurant.cuisine] || "🍽"} {restaurant.cuisine || "Other"}
+        </span>
       </div>
     </div>
   );

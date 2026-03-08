@@ -7,10 +7,10 @@ export const getAllRestaurants = async () => {
 };
 
 // CREATE
-export const createRestaurant = async (name, description, image, userId) => {
+export const createRestaurant = async (name, description, image, cuisine, userId) => {
   const [result] = await db.query(
-    "INSERT INTO restaurants (name, description, image, user_id) VALUES (?, ?, ?, ?)",
-    [name, description, image, userId]
+    "INSERT INTO restaurants (name, description, image, cuisine, user_id) VALUES (?, ?, ?, ?, ?)",
+    [name, description, image, cuisine, userId]
   );
 
   return {
@@ -18,6 +18,7 @@ export const createRestaurant = async (name, description, image, userId) => {
     name,
     description,
     image,
+    cuisine,
     user_id: userId,
   };
 };

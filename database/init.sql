@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS restaurants (
   name VARCHAR(255) NOT NULL,
   description TEXT,
   image VARCHAR(500),
+  cuisine VARCHAR(50),
   user_id INT NOT NULL,
   average_rating FLOAT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
