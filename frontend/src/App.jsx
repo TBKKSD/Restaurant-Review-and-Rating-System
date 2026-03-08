@@ -13,16 +13,17 @@ export default function App() {
     <>
       <Navbar />
       <Routes>
-        <Route 
-          path="/" 
-          element={
-              <Home />
-          } />
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/restaurants" element={<Restaurants />} />
         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
-        <Route path="/add-restaurant" element={<AddRestaurant />} />
+        <Route path="/add-restaurant" element={
+            <ProtectedRoute> 
+              <AddRestaurant /> 
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
     </>
   );
