@@ -16,3 +16,13 @@ CREATE TABLE IF NOT EXISTS restaurants (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE menu_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  restaurant_id INT NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  price DECIMAL(6,2),
+  image_url VARCHAR(255),
+  FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
+);

@@ -54,6 +54,17 @@ router.get("/:id", async (req, res) => {
 
 });
 
+router.get("/:id/menu", async (req, res) => {
+  const restaurantId = req.params.id;
+
+  const [rows] = await db.query(
+    "SELECT * FROM menu_items WHERE restaurant_id = ?",
+    [restaurantId]
+  );
+
+  res.json(rows);
+});
+
 /* =========================
    PROTECTED ROUTES
 ========================= */
@@ -83,6 +94,34 @@ router.post(
 
   }
 );
+
+router.post( "/:id/menu", upload.single("image"), processImage, async (req, res) => {
+  try {
+    const restaurantId = req.params.id;
+
+    const { name, description, price } = req.body;
+
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+    const [result] = await db.query(
+      "INSERT INTO menu_items (restaurant_id, name, description, price, image_url) VALUES (?, ?, ?, ?, ?)",
+      [restaurantId, name, description, price, imageUrl]
+    );
+
+    res.json({
+      id: result.insertId,
+      restaurant_id: restaurantId,
+      name,
+      description,
+      price,
+      image_url: imageUrl
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 router.put(
   "/:id",

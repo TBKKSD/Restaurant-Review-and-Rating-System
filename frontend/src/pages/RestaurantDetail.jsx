@@ -14,6 +14,15 @@ export default function RestaurantDetail() {
 
   const [restaurant, setRestaurant] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [menu, setMenu] = useState([]);
+  const [showAddMenu, setShowAddMenu] = useState(false);
+
+  const [menuForm, setMenuForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    image: null
+  });
 
   const [currentUserId, setCurrentUserId] = useState(null);
 
@@ -33,6 +42,7 @@ export default function RestaurantDetail() {
   useEffect(() => {
     fetchRestaurant();
     fetchReviews();
+    fetchMenu();
   }, []);
 
   useEffect(() => {
@@ -65,6 +75,11 @@ export default function RestaurantDetail() {
 
     fetchRestaurant();
     fetchReviews();
+  };
+
+  const fetchMenu = async () => {
+    const res = await API.get(`/restaurants/${id}/menu`);
+    setMenu(res.data);
   };
 
   const openDeleteReviewModal = (reviewId) => {
@@ -169,6 +184,38 @@ export default function RestaurantDetail() {
     }
   };
 
+  const handleAddMenu = async () => {
+
+    const formData = new FormData();
+
+    formData.append("name", menuForm.name);
+    formData.append("description", menuForm.description);
+    formData.append("price", menuForm.price);
+
+    if (menuForm.image) {
+      formData.append("image", menuForm.image);
+    }
+
+    const res = await API.post(
+      `/restaurants/${id}/menu`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" }
+      }
+    );
+
+    setMenu([...menu, res.data]);
+
+    setMenuForm({
+      name: "",
+      description: "",
+      price: "",
+      image: null
+    });
+
+    setShowAddMenu(false);
+  };
+
   if (!restaurant) return <div className="p-10">Loading...</div>;
 
   return (
@@ -222,6 +269,69 @@ export default function RestaurantDetail() {
 
           </div>
         )}
+
+      </div>
+
+      {/* MENU */}
+
+      <div className="mt-10">
+
+        <div className="flex justify-between items-center mb-4">
+
+          <h2 className="text-xl font-bold">
+            Menu
+          </h2>
+
+          {token && (
+            <button
+              onClick={() => setShowAddMenu(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              + Add Item
+            </button>
+          )}
+
+        </div>
+
+        <div className="space-y-4">
+
+          {menu.map((item) => (
+
+            <div
+              key={item.id}
+              className="flex justify-between items-center border rounded p-4 bg-white shadow-sm"
+            >
+
+              <div className="flex-1">
+
+                <h3 className="font-semibold text-lg">
+                  {item.name}
+                </h3>
+
+                {item.description && (
+                  <p className="text-gray-600 text-sm">
+                    {item.description}
+                  </p>
+                )}
+
+                <p className="font-medium mt-1">
+                  ${item.price}
+                </p>
+
+              </div>
+
+              {item.image_url && (
+                <img
+                  src={`http://localhost:5000${item.image_url}`}
+                  className="w-24 h-24 object-cover rounded-lg"
+                />
+              )}
+
+            </div>
+
+          ))}
+
+        </div>
 
       </div>
 
@@ -372,6 +482,74 @@ export default function RestaurantDetail() {
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               >
                 Update Restaurant
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+      {showAddMenu && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
+
+            <h3 className="text-xl font-bold mb-4">
+              Add Menu Item
+            </h3>
+
+            <input
+              type="text"
+              placeholder="Food name"
+              className="border p-2 w-full mb-3 rounded"
+              value={menuForm.name}
+              onChange={(e) =>
+                setMenuForm({ ...menuForm, name: e.target.value })
+              }
+            />
+
+            <textarea
+              placeholder="Description"
+              className="border p-2 w-full mb-3 rounded"
+              value={menuForm.description}
+              onChange={(e) =>
+                setMenuForm({ ...menuForm, description: e.target.value })
+              }
+            />
+
+            <input
+              type="number"
+              placeholder="Price"
+              className="border p-2 w-full mb-3 rounded"
+              value={menuForm.price}
+              onChange={(e) =>
+                setMenuForm({ ...menuForm, price: e.target.value })
+              }
+            />
+
+            <ImageUploader
+              image={menuForm.image}
+              setImage={(file) =>
+                setMenuForm({ ...menuForm, image: file })
+              }
+            />
+
+            <div className="flex justify-end gap-3 mt-4">
+
+              <button
+                onClick={() => setShowAddMenu(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleAddMenu}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Add Item
               </button>
 
             </div>
