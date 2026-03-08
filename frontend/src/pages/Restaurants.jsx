@@ -9,6 +9,7 @@ export default function Restaurants() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCuisine, setSelectedCuisine] = useState("All");
+  const [sortOption, setSortOption] = useState("rating");
 
   const { token } = useAuth();
 
@@ -63,6 +64,22 @@ export default function Restaurants() {
     return matchesSearch && matchesCuisine;
   });
 
+  const sortedRestaurants = [...filteredRestaurants].sort((a, b) => {
+    if (sortOption === "rating") {
+      return (b.rating || 0) - (a.rating || 0);
+    }
+
+    if (sortOption === "name") {
+      return a.name.localeCompare(b.name);
+    }
+
+    if (sortOption === "newest") {
+      return b.id - a.id; // assumes higher id = newer
+    }
+
+    return 0;
+  });
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
 
@@ -110,6 +127,18 @@ export default function Restaurants() {
         ))}
       </div>
 
+      <div className="flex justify-end mb-4">
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
+          className="border rounded-md px-3 py-1 text-sm bg-white shadow-sm"
+        >
+          <option value="rating">⭐ Top Rated</option>
+          <option value="name">🔤 Name (A-Z)</option>
+          <option value="newest">🆕 Newest</option>
+        </select>
+      </div>
+
       {/* Loading Skeleton */}
       {loading && (
         <div className="grid md:grid-cols-3 gap-6">
@@ -135,7 +164,7 @@ export default function Restaurants() {
       {/* Restaurant Grid */}
       {!loading && filteredRestaurants.length > 0 && (
         <div className="grid md:grid-cols-3 gap-6">
-          {filteredRestaurants.map((restaurant) => (
+          {sortedRestaurants.map((restaurant) => (
             <RestaurantCard
               key={restaurant.id}
               restaurant={restaurant}
