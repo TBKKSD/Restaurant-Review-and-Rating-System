@@ -60,7 +60,7 @@ const RestaurantCard = ({ restaurant }) => {
 
         {/* Rating badge */}
         {rating && (
-          <div className="absolute top-3 right-3 bg-white text-gray-800 text-sm font-semibold px-2 py-1 rounded-lg shadow">
+          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur text-gray-800 text-sm font-semibold px-2 py-1 rounded-lg shadow">
             ⭐ {rating}
           </div>
         )}

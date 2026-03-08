@@ -8,6 +8,7 @@ export default function Restaurants() {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedCuisine, setSelectedCuisine] = useState("All");
 
   const { token } = useAuth();
 
@@ -29,10 +30,6 @@ export default function Restaurants() {
     fetchRestaurants();
   }, []);
 
-  const filteredRestaurants = restaurants.filter((r) =>
-    r.name.toLowerCase().includes(search.toLowerCase())
-  );
-
   const SkeletonCard = () => (
     <div className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
       <div className="h-40 bg-gray-200"></div>
@@ -43,6 +40,28 @@ export default function Restaurants() {
       </div>
     </div>
   );
+
+  const cuisines = [
+    "All",
+    "Japanese",
+    "Italian",
+    "Thai",
+    "Chinese",
+    "American",
+    "Mexican",
+    "Indian",
+    "Korean",
+    "Vietnamese",
+    "Other"
+  ];
+
+  const filteredRestaurants = restaurants.filter((r) => {
+    const matchesSearch = r.name.toLowerCase().includes(search.toLowerCase());
+    const matchesCuisine =
+      selectedCuisine === "All" || r.cuisine === selectedCuisine;
+
+    return matchesSearch && matchesCuisine;
+  });
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
@@ -73,6 +92,23 @@ export default function Restaurants() {
         onChange={(e) => setSearch(e.target.value)}
         className="w-full max-w-md border border-gray-300 rounded-lg px-4 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
+
+      <div className="flex flex-wrap gap-2 mb-6 border-b pb-4">
+        {cuisines.map((cuisine) => (
+          <button
+            key={cuisine}
+            onClick={() => setSelectedCuisine(cuisine)}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition
+              ${
+                selectedCuisine === cuisine
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              }`}
+          >
+            {cuisine}
+          </button>
+        ))}
+      </div>
 
       {/* Loading Skeleton */}
       {loading && (
