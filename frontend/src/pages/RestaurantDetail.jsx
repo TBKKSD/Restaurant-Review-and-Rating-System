@@ -178,6 +178,7 @@ export default function RestaurantDetail() {
       {restaurant.image && (
         <img
           src={`http://localhost:5000${restaurant.image}`}
+          onError={(e) => (e.target.style.display = "none")}
           alt={restaurant.name}
           className="w-full h-80 object-cover rounded-lg mb-6"
         />

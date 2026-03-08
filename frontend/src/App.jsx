@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Restaurants from "./pages/Restaurants";
 import RestaurantDetail from "./pages/RestaurantDetail";
+import AddRestaurant from "./pages/AddRestaurant";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
@@ -19,13 +20,9 @@ export default function App() {
           } />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/restaurants" element={<Restaurants />} />
         <Route path="/restaurants/:id" element={<RestaurantDetail />} />
-        <Route
-          path="/restaurants"
-          element={
-              <Restaurants />
-          }
-        />
+        <Route path="/add-restaurant" element={<AddRestaurant />} />
       </Routes>
     </>
   );
