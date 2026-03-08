@@ -8,6 +8,38 @@ const AddRestaurant = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files[0];
+
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,48 +69,132 @@ const AddRestaurant = () => {
   };
 
   return (
-    <div style={{ padding: "30px", maxWidth: "500px" }}>
-      <h1>Add Restaurant</h1>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        padding: "40px"
+      }}
+    >
+      <div
+        style={{
+          width: "500px",
+          background: "white",
+          padding: "30px",
+          borderRadius: "12px",
+          boxShadow: "0 6px 14px rgba(0,0,0,0.1)"
+        }}
+      >
+        <h2 style={{ marginBottom: "20px" }}>
+          ➕ Add New Restaurant
+        </h2>
 
-      <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
+          {/* NAME */}
+          <label>Restaurant Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            style={{
+              width: "100%",
+              padding: "10px",
+              margin: "8px 0 16px",
+              borderRadius: "6px",
+              border: "1px solid #ccc"
+            }}
+          />
 
-        <input
-          type="text"
-          placeholder="Restaurant Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
-        />
+          {/* DESCRIPTION */}
+          <label>Description</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows="4"
+            style={{
+              width: "100%",
+              padding: "10px",
+              margin: "8px 0 16px",
+              borderRadius: "6px",
+              border: "1px solid #ccc"
+            }}
+          />
 
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
-        />
+          {/* DRAG DROP */}
+          <label>Restaurant Image</label>
 
-        <input
-          type="file"
-          onChange={(e) => setImage(e.target.files[0])}
-          style={{ marginBottom: "15px" }}
-        />
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            style={{
+              border: "2px dashed",
+              borderColor: isDragging ? "#4CAF50" : "#ccc",
+              background: isDragging ? "#f3fff3" : "white",
+              padding: "30px",
+              borderRadius: "10px",
+              textAlign: "center",
+              marginBottom: "15px",
+              transition: "all 0.2s"
+            }}
+          >
+            <p style={{ marginBottom: "10px", color: "#555" }}>
+              Drag & drop an image here
+            </p>
 
-        <button
-          type="submit"
-          style={{
-            padding: "10px 14px",
-            borderRadius: "8px",
-            border: "none",
-            background: "#4CAF50",
-            color: "white",
-            cursor: "pointer"
-          }}
-        >
-          Create Restaurant
-        </button>
+            <label
+              style={{
+                display: "inline-block",
+                padding: "8px 14px",
+                background: "#2196F3",
+                color: "white",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "14px"
+              }}
+            >
+              Choose File
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFile}
+                style={{ display: "none" }}
+              />
+            </label>
+          </div>
 
-      </form>
+          {/* IMAGE PREVIEW */}
+          {preview && (
+            <img
+              src={preview}
+              alt="preview"
+              style={{
+                width: "100%",
+                borderRadius: "8px",
+                marginBottom: "15px"
+              }}
+            />
+          )}
+
+          {/* SUBMIT */}
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              padding: "12px",
+              border: "none",
+              borderRadius: "8px",
+              background: "#4CAF50",
+              color: "white",
+              fontSize: "16px",
+              cursor: "pointer"
+            }}
+          >
+            Create Restaurant
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

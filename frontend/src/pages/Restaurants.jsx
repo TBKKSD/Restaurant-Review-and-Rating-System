@@ -5,6 +5,7 @@ import RestaurantCard from "../components/RestaurantCard";
 
 const Restaurants = () => {
   const [restaurants, setRestaurants] = useState([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
@@ -22,7 +23,6 @@ const Restaurants = () => {
       }
 
       setLoading(false);
-
     } catch (err) {
       console.error("Error fetching restaurants:", err);
       setLoading(false);
@@ -33,15 +33,20 @@ const Restaurants = () => {
     fetchRestaurants();
   }, []);
 
+  const filteredRestaurants = restaurants.filter((r) =>
+    r.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   if (loading) {
     return <h2 style={{ padding: "30px" }}>Loading restaurants...</h2>;
   }
 
   return (
     <div style={{ padding: "30px" }}>
+      {/* HEADER */}
       <div
         style={{
-          marginBottom: "30px",
+          marginBottom: "25px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center"
@@ -72,10 +77,24 @@ const Restaurants = () => {
         </button>
       </div>
 
-      {restaurants.length === 0 && (
-        <p>No restaurants found.</p>
-      )}
+      {/* SEARCH BAR */}
+      <input
+        type="text"
+        placeholder="Search restaurants..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          padding: "10px 14px",
+          borderRadius: "8px",
+          border: "1px solid #ccc",
+          marginBottom: "25px",
+          fontSize: "14px"
+        }}
+      />
 
+      {/* GRID */}
       <div
         style={{
           display: "grid",
@@ -83,13 +102,19 @@ const Restaurants = () => {
           gap: "20px"
         }}
       >
-        {restaurants.map((restaurant) => (
+        {filteredRestaurants.map((restaurant) => (
           <RestaurantCard
             key={restaurant.id}
             restaurant={restaurant}
           />
         ))}
       </div>
+
+      {filteredRestaurants.length === 0 && (
+        <p style={{ marginTop: "20px", color: "#666" }}>
+          No restaurants found.
+        </p>
+      )}
     </div>
   );
 };
