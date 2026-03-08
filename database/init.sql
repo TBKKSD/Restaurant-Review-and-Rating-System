@@ -10,8 +10,19 @@ CREATE TABLE IF NOT EXISTS restaurants (
   name VARCHAR(255) NOT NULL,
   description TEXT,
   image VARCHAR(500),
+  cuisine VARCHAR(50),
   user_id INT NOT NULL,
   average_rating FLOAT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE menu_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  restaurant_id INT NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  price DECIMAL(6,2),
+  image_url VARCHAR(255),
+  FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
 );
