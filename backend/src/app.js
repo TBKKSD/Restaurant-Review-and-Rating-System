@@ -1,9 +1,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import authRoutes from "./routes/authRoutes.js";
-import restaurantRoutes from "./routes/restaurantRoutes.js";
-import reviewRoutes from "./routes/reviewRoutes.js";
 
 dotenv.config();
 
@@ -26,10 +23,6 @@ app.use("/uploads", express.static("uploads"));
 app.get("/", (req, res) => {
   res.json({ message: "RRRS API is running 🚀" });
 });
-
-app.use("/api/auth", authRoutes);
-app.use("/api/restaurants", restaurantRoutes);
-app.use("/api/reviews", reviewRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
