@@ -1,0 +1,43 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import authRoutes from "./routes/authRoutes.js";
+import restaurantRoutes from "./routes/restaurantRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
+
+dotenv.config();
+
+const app = express();
+
+// Parse JSON body
+app.use(express.json());
+
+// Allow frontend (Vite) to access backend
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+  })
+);
+
+// Serve uploaded images
+app.use("/uploads", express.static("uploads"));
+
+app.get("/", (req, res) => {
+  res.json({ message: "RRRS API is running 🚀" });
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/restaurants", restaurantRoutes);
+app.use("/api/reviews", reviewRoutes);
+
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Something went wrong" });
+});
+
+export default app;

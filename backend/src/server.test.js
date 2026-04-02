@@ -1,10 +1,16 @@
 import request from "supertest";
-import express from "express";
+import app from "./app.js";
 
-test("health check", async () => {
-  const app = express();
-  app.get("/health", (req, res) => res.json({ ok: true }));
+test("GET / returns a running API message", async () => {
+  const response = await request(app).get("/");
 
-  const res = await request(app).get("/health");
-  expect(res.statusCode).toBe(200);
+  expect(response.statusCode).toBe(200);
+  expect(response.body).toEqual({ message: "RRRS API is running 🚀" });
+});
+
+test("GET /unknown returns 404 route not found", async () => {
+  const response = await request(app).get("/unknown-route");
+
+  expect(response.statusCode).toBe(404);
+  expect(response.body).toEqual({ message: "Route not found" });
 });
