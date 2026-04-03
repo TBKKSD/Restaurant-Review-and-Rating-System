@@ -12,7 +12,7 @@ app.use(express.json());
 // Allow frontend (Vite) to access backend
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://restaurant-review-and-rating-system.vercel.app/restaurant-review-and-rating-system.vercel.app"],
+    origin: ["http://localhost:5173", "https://restaurant-review-and-rating-system.vercel.app"],
     credentials: true,
   })
 );
