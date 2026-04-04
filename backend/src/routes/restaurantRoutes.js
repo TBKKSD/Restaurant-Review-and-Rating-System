@@ -1,4 +1,6 @@
 import express from "express";
+const router = express.Router()
+
 import db from "../db.js";
 
 import {
@@ -223,4 +225,4 @@ export const createRestaurantRouter = ({
   return router;
 };
 
-export default createRestaurantRouter();
+export default router;
