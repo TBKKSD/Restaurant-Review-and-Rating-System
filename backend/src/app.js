@@ -36,9 +36,11 @@ app.get("/", (req, res) => {
   res.json({ message: "RRRS API is running 🚀" });
 });
 
+/*
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
+*/
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

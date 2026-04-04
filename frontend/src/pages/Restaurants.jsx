@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+
+import API from "../api"; 
 import RestaurantCard from "../components/RestaurantCard";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -16,13 +17,11 @@ export default function Restaurants() {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:5000/api/restaurants"
-        );
-
+      
+        const res = await API.get("/restaurants");
         setRestaurants(res.data);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching restaurants:", err);
       } finally {
         setLoading(false);
       }
@@ -43,17 +42,8 @@ export default function Restaurants() {
   );
 
   const cuisines = [
-    "All",
-    "Japanese",
-    "Italian",
-    "Thai",
-    "Chinese",
-    "American",
-    "Mexican",
-    "Indian",
-    "Korean",
-    "Vietnamese",
-    "Other"
+    "All", "Japanese", "Italian", "Thai", "Chinese", "American",
+    "Mexican", "Indian", "Korean", "Vietnamese", "Other"
   ];
 
   const filteredRestaurants = restaurants.filter((r) => {
@@ -68,28 +58,22 @@ export default function Restaurants() {
     if (sortOption === "rating") {
       return (b.rating || 0) - (a.rating || 0);
     }
-
     if (sortOption === "name") {
       return a.name.localeCompare(b.name);
     }
-
     if (sortOption === "newest") {
-      return b.id - a.id; // assumes higher id = newer
+      return b.id - a.id; 
     }
-
     return 0;
   });
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
-
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-
         <h1 className="text-3xl font-bold text-gray-800">
           Restaurants List 📖
         </h1>
-
         {token && (
           <Link
             to="/add-restaurant"
@@ -98,7 +82,6 @@ export default function Restaurants() {
             + Add Restaurant
           </Link>
         )}
-
       </div>
 
       {/* Search */}
@@ -110,6 +93,7 @@ export default function Restaurants() {
         className="w-full max-w-md border border-gray-300 rounded-lg px-4 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
 
+      {/* Filter Buttons */}
       <div className="flex flex-wrap gap-2 mb-6 border-b pb-4">
         {cuisines.map((cuisine) => (
           <button
@@ -127,6 +111,7 @@ export default function Restaurants() {
         ))}
       </div>
 
+      {/* Sort Dropdown */}
       <div className="flex justify-end mb-4">
         <select
           value={sortOption}
@@ -154,7 +139,6 @@ export default function Restaurants() {
           <h2 className="text-xl font-semibold text-gray-700">
             No restaurants found 🍽
           </h2>
-
           <p className="text-gray-500 mt-2">
             Try a different search or add a new restaurant.
           </p>
@@ -172,7 +156,6 @@ export default function Restaurants() {
           ))}
         </div>
       )}
-
     </div>
   );
 }
