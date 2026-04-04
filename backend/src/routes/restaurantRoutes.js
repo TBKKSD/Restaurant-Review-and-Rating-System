@@ -225,4 +225,4 @@ export const createRestaurantRouter = ({
   return router;
 };
 
-export default router;
+export default createRestaurantRouter();
